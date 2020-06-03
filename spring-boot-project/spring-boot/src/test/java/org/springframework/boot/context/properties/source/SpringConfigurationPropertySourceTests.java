@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,9 @@ package org.springframework.boot.context.properties.source;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
+import org.springframework.boot.env.RandomValuePropertySource;
 import org.springframework.boot.origin.Origin;
 import org.springframework.boot.origin.OriginLookup;
 import org.springframework.core.env.MapPropertySource;
@@ -36,26 +37,17 @@ import static org.mockito.Mockito.mock;
  * @author Phillip Webb
  * @author Madhura Bhave
  */
-public class SpringConfigurationPropertySourceTests {
+class SpringConfigurationPropertySourceTests {
 
 	@Test
-	public void createWhenPropertySourceIsNullShouldThrowException() {
+	void createWhenPropertySourceIsNullShouldThrowException() {
 		assertThatIllegalArgumentException()
-				.isThrownBy(() -> new SpringConfigurationPropertySource(null,
-						mock(PropertyMapper.class), null))
+				.isThrownBy(() -> new SpringConfigurationPropertySource(null, mock(PropertyMapper.class)))
 				.withMessageContaining("PropertySource must not be null");
 	}
 
 	@Test
-	public void createWhenMapperIsNullShouldThrowException() {
-		assertThatIllegalArgumentException()
-				.isThrownBy(() -> new SpringConfigurationPropertySource(
-						mock(PropertySource.class), null, null))
-				.withMessageContaining("Mapper must not be null");
-	}
-
-	@Test
-	public void getValueShouldUseDirectMapping() {
+	void getValueShouldUseDirectMapping() {
 		Map<String, Object> source = new LinkedHashMap<>();
 		source.put("key1", "value1");
 		source.put("key2", "value2");
@@ -64,62 +56,55 @@ public class SpringConfigurationPropertySourceTests {
 		TestPropertyMapper mapper = new TestPropertyMapper();
 		ConfigurationPropertyName name = ConfigurationPropertyName.of("my.key");
 		mapper.addFromConfigurationProperty(name, "key2");
-		SpringConfigurationPropertySource adapter = new SpringConfigurationPropertySource(
-				propertySource, mapper, null);
+		SpringConfigurationPropertySource adapter = new SpringConfigurationPropertySource(propertySource, mapper);
 		assertThat(adapter.getConfigurationProperty(name).getValue()).isEqualTo("value2");
 	}
 
 	@Test
-	public void getValueOrigin() {
+	void getValueOrigin() {
 		Map<String, Object> source = new LinkedHashMap<>();
 		source.put("key", "value");
 		PropertySource<?> propertySource = new MapPropertySource("test", source);
 		TestPropertyMapper mapper = new TestPropertyMapper();
 		ConfigurationPropertyName name = ConfigurationPropertyName.of("my.key");
 		mapper.addFromConfigurationProperty(name, "key");
-		SpringConfigurationPropertySource adapter = new SpringConfigurationPropertySource(
-				propertySource, mapper, null);
+		SpringConfigurationPropertySource adapter = new SpringConfigurationPropertySource(propertySource, mapper);
 		assertThat(adapter.getConfigurationProperty(name).getOrigin().toString())
 				.isEqualTo("\"key\" from property source \"test\"");
 	}
 
 	@Test
-	public void getValueWhenOriginCapableShouldIncludeSourceOrigin() {
+	void getValueWhenOriginCapableShouldIncludeSourceOrigin() {
 		Map<String, Object> source = new LinkedHashMap<>();
 		source.put("key", "value");
-		PropertySource<?> propertySource = new OriginCapablePropertySource<>(
-				new MapPropertySource("test", source));
+		PropertySource<?> propertySource = new OriginCapablePropertySource<>(new MapPropertySource("test", source));
 		TestPropertyMapper mapper = new TestPropertyMapper();
 		ConfigurationPropertyName name = ConfigurationPropertyName.of("my.key");
 		mapper.addFromConfigurationProperty(name, "key");
-		SpringConfigurationPropertySource adapter = new SpringConfigurationPropertySource(
-				propertySource, mapper, null);
-		assertThat(adapter.getConfigurationProperty(name).getOrigin().toString())
-				.isEqualTo("TestOrigin key");
+		SpringConfigurationPropertySource adapter = new SpringConfigurationPropertySource(propertySource, mapper);
+		assertThat(adapter.getConfigurationProperty(name).getOrigin().toString()).isEqualTo("TestOrigin key");
 	}
 
 	@Test
-	public void containsDescendantOfShouldReturnEmpty() {
+	void containsDescendantOfShouldReturnEmpty() {
 		Map<String, Object> source = new LinkedHashMap<>();
 		source.put("foo.bar", "value");
 		PropertySource<?> propertySource = new MapPropertySource("test", source);
-		SpringConfigurationPropertySource adapter = new SpringConfigurationPropertySource(
-				propertySource, DefaultPropertyMapper.INSTANCE, null);
+		SpringConfigurationPropertySource adapter = new SpringConfigurationPropertySource(propertySource,
+				DefaultPropertyMapper.INSTANCE);
 		assertThat(adapter.containsDescendantOf(ConfigurationPropertyName.of("foo")))
 				.isEqualTo(ConfigurationPropertyState.UNKNOWN);
 	}
 
 	@Test
-	public void fromWhenPropertySourceIsNullShouldThrowException() {
-		assertThatIllegalArgumentException()
-				.isThrownBy(() -> SpringConfigurationPropertySource.from(null))
+	void fromWhenPropertySourceIsNullShouldThrowException() {
+		assertThatIllegalArgumentException().isThrownBy(() -> SpringConfigurationPropertySource.from(null))
 				.withMessageContaining("Source must not be null");
 	}
 
 	@Test
-	public void fromWhenNonEnumerableShouldReturnNonIterable() {
-		PropertySource<?> propertySource = new PropertySource<Object>("test",
-				new Object()) {
+	void fromWhenNonEnumerableShouldReturnNonIterable() {
+		PropertySource<?> propertySource = new PropertySource<Object>("test", new Object()) {
 
 			@Override
 			public Object getProperty(String name) {
@@ -133,7 +118,7 @@ public class SpringConfigurationPropertySourceTests {
 	}
 
 	@Test
-	public void fromWhenEnumerableButRestrictedShouldReturnNonIterable() {
+	void fromWhenEnumerableButRestrictedShouldReturnNonIterable() {
 		Map<String, Object> source = new LinkedHashMap<String, Object>() {
 
 			@Override
@@ -148,7 +133,7 @@ public class SpringConfigurationPropertySourceTests {
 	}
 
 	@Test
-	public void getWhenEnumerableShouldBeIterable() {
+	void getWhenEnumerableShouldBeIterable() {
 		Map<String, Object> source = new LinkedHashMap<>();
 		source.put("fooBar", "Spring ${barBaz} ${bar-baz}");
 		source.put("barBaz", "Boot");
@@ -157,11 +142,36 @@ public class SpringConfigurationPropertySourceTests {
 				.isInstanceOf(IterableConfigurationPropertySource.class);
 	}
 
+	@Test
+	void containsDescendantOfWhenRandomSourceAndRandomPropertyReturnsPresent() {
+		SpringConfigurationPropertySource source = SpringConfigurationPropertySource
+				.from(new RandomValuePropertySource());
+		assertThat(source.containsDescendantOf(ConfigurationPropertyName.of("random")))
+				.isEqualTo(ConfigurationPropertyState.PRESENT);
+	}
+
+	@Test
+	void containsDescendantOfWhenRandomSourceAndRandomPrefixedPropertyReturnsPresent() {
+		SpringConfigurationPropertySource source = SpringConfigurationPropertySource
+				.from(new RandomValuePropertySource());
+		assertThat(source.containsDescendantOf(ConfigurationPropertyName.of("random.something")))
+				.isEqualTo(ConfigurationPropertyState.PRESENT);
+	}
+
+	@Test
+	void containsDescendantOfWhenRandomSourceAndNonRandomPropertyReturnsAbsent() {
+		SpringConfigurationPropertySource source = SpringConfigurationPropertySource
+				.from(new RandomValuePropertySource());
+		assertThat(source.containsDescendantOf(ConfigurationPropertyName.of("abandon.something")))
+				.isEqualTo(ConfigurationPropertyState.ABSENT);
+	}
+
 	/**
 	 * Test {@link PropertySource} that's also an {@link OriginLookup}.
+	 *
+	 * @param <T> The source type
 	 */
-	private static class OriginCapablePropertySource<T> extends PropertySource<T>
-			implements OriginLookup<String> {
+	static class OriginCapablePropertySource<T> extends PropertySource<T> implements OriginLookup<String> {
 
 		private final PropertySource<T> propertySource;
 

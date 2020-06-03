@@ -27,6 +27,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration;
+import org.springframework.boot.autoconfigure.security.saml2.Saml2RelyingPartyAutoConfiguration;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.autoconfigure.security.servlet.WebSecurityEnablerConfiguration;
 import org.springframework.context.annotation.Configuration;
@@ -46,12 +47,10 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 @ConditionalOnMissingBean(WebSecurityConfigurerAdapter.class)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @AutoConfigureBefore(SecurityAutoConfiguration.class)
-@AutoConfigureAfter({ HealthEndpointAutoConfiguration.class,
-		InfoEndpointAutoConfiguration.class, WebEndpointAutoConfiguration.class,
-		OAuth2ClientAutoConfiguration.class,
-		OAuth2ResourceServerAutoConfiguration.class })
-@Import({ ManagementWebSecurityConfigurerAdapter.class,
-		WebSecurityEnablerConfiguration.class })
+@AutoConfigureAfter({ HealthEndpointAutoConfiguration.class, InfoEndpointAutoConfiguration.class,
+		WebEndpointAutoConfiguration.class, OAuth2ClientAutoConfiguration.class,
+		OAuth2ResourceServerAutoConfiguration.class, Saml2RelyingPartyAutoConfiguration.class })
+@Import({ ManagementWebSecurityConfigurerAdapter.class, WebSecurityEnablerConfiguration.class })
 public class ManagementWebSecurityAutoConfiguration {
 
 }
