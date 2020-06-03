@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,12 +43,12 @@ import org.springframework.context.annotation.Configuration;
  * @since 2.1.0
  */
 @Configuration
-@AutoConfigureBefore({ CompositeMeterRegistryAutoConfiguration.class,
-		SimpleMetricsExportAutoConfiguration.class })
+@AutoConfigureBefore({ CompositeMeterRegistryAutoConfiguration.class, SimpleMetricsExportAutoConfiguration.class })
 @AutoConfigureAfter(MetricsAutoConfiguration.class)
 @ConditionalOnBean(Clock.class)
 @ConditionalOnClass(DynatraceMeterRegistry.class)
-@ConditionalOnProperty(prefix = "management.metrics.export.dynatrace", name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "management.metrics.export.dynatrace", name = "enabled", havingValue = "true",
+		matchIfMissing = true)
 @EnableConfigurationProperties(DynatraceProperties.class)
 public class DynatraceMetricsExportAutoConfiguration {
 
@@ -66,12 +66,9 @@ public class DynatraceMetricsExportAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public DynatraceMeterRegistry dynatraceMeterRegistry(DynatraceConfig dynatraceConfig,
-			Clock clock) {
-		return DynatraceMeterRegistry.builder(dynatraceConfig).clock(clock)
-				.httpClient(
-						new HttpUrlConnectionSender(this.properties.getConnectTimeout(),
-								this.properties.getReadTimeout()))
+	public DynatraceMeterRegistry dynatraceMeterRegistry(DynatraceConfig dynatraceConfig, Clock clock) {
+		return DynatraceMeterRegistry.builder(dynatraceConfig).clock(clock).httpClient(
+				new HttpUrlConnectionSender(this.properties.getConnectTimeout(), this.properties.getReadTimeout()))
 				.build();
 	}
 

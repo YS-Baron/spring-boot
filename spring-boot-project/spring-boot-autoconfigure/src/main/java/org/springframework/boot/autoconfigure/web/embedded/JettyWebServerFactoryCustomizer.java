@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,17 +44,17 @@ import org.springframework.util.unit.DataSize;
  *
  * @author Brian Clozel
  * @author Phillip Webb
+ * @author Rafiullah Hamedy
  * @since 2.0.0
  */
-public class JettyWebServerFactoryCustomizer implements
-		WebServerFactoryCustomizer<ConfigurableJettyWebServerFactory>, Ordered {
+public class JettyWebServerFactoryCustomizer
+		implements WebServerFactoryCustomizer<ConfigurableJettyWebServerFactory>, Ordered {
 
 	private final Environment environment;
 
 	private final ServerProperties serverProperties;
 
-	public JettyWebServerFactoryCustomizer(Environment environment,
-			ServerProperties serverProperties) {
+	public JettyWebServerFactoryCustomizer(Environment environment, ServerProperties serverProperties) {
 		this.environment = environment;
 		this.serverProperties = serverProperties;
 	}
@@ -68,26 +68,20 @@ public class JettyWebServerFactoryCustomizer implements
 	public void customize(ConfigurableJettyWebServerFactory factory) {
 		ServerProperties properties = this.serverProperties;
 		ServerProperties.Jetty jettyProperties = properties.getJetty();
-		factory.setUseForwardHeaders(
-				getOrDeduceUseForwardHeaders(properties, this.environment));
+		factory.setUseForwardHeaders(getOrDeduceUseForwardHeaders(properties, this.environment));
 		PropertyMapper propertyMapper = PropertyMapper.get();
-		propertyMapper.from(jettyProperties::getAcceptors).whenNonNull()
-				.to(factory::setAcceptors);
-		propertyMapper.from(jettyProperties::getSelectors).whenNonNull()
-				.to(factory::setSelectors);
-		propertyMapper.from(properties::getMaxHttpHeaderSize).whenNonNull()
-				.asInt(DataSize::toBytes).when(this::isPositive)
-				.to((maxHttpHeaderSize) -> factory.addServerCustomizers(
-						new MaxHttpHeaderSizeCustomizer(maxHttpHeaderSize)));
-		propertyMapper.from(jettyProperties::getMaxHttpPostSize).asInt(DataSize::toBytes)
-				.when(this::isPositive)
-				.to((maxHttpPostSize) -> customizeMaxHttpPostSize(factory,
-						maxHttpPostSize));
+		propertyMapper.from(jettyProperties::getAcceptors).whenNonNull().to(factory::setAcceptors);
+		propertyMapper.from(jettyProperties::getSelectors).whenNonNull().to(factory::setSelectors);
+		propertyMapper.from(properties::getMaxHttpHeaderSize).whenNonNull().asInt(DataSize::toBytes)
+				.when(this::isPositive).to((maxHttpHeaderSize) -> factory
+						.addServerCustomizers(new MaxHttpHeaderSizeCustomizer(maxHttpHeaderSize)));
+		propertyMapper.from(jettyProperties::getMaxHttpFormPostSize).asInt(DataSize::toBytes).when(this::isPositive)
+				.to((maxHttpFormPostSize) -> customizeMaxHttpFormPostSize(factory, maxHttpFormPostSize));
 		propertyMapper.from(properties::getConnectionTimeout).whenNonNull()
-				.to((connectionTimeout) -> customizeConnectionTimeout(factory,
-						connectionTimeout));
-		propertyMapper.from(jettyProperties::getAccesslog)
-				.when(ServerProperties.Jetty.Accesslog::isEnabled)
+				.to((connectionTimeout) -> customizeIdleTimeout(factory, connectionTimeout));
+		propertyMapper.from(jettyProperties::getConnectionIdleTimeout).whenNonNull()
+				.to((idleTimeout) -> customizeIdleTimeout(factory, idleTimeout));
+		propertyMapper.from(jettyProperties::getAccesslog).when(ServerProperties.Jetty.Accesslog::isEnabled)
 				.to((accesslog) -> customizeAccessLog(factory, accesslog));
 	}
 
@@ -95,8 +89,7 @@ public class JettyWebServerFactoryCustomizer implements
 		return value > 0;
 	}
 
-	private boolean getOrDeduceUseForwardHeaders(ServerProperties serverProperties,
-			Environment environment) {
+	private boolean getOrDeduceUseForwardHeaders(ServerProperties serverProperties, Environment environment) {
 		if (serverProperties.isUseForwardHeaders() != null) {
 			return serverProperties.isUseForwardHeaders();
 		}
@@ -104,40 +97,34 @@ public class JettyWebServerFactoryCustomizer implements
 		return platform != null && platform.isUsingForwardHeaders();
 	}
 
-	private void customizeConnectionTimeout(ConfigurableJettyWebServerFactory factory,
-			Duration connectionTimeout) {
+	private void customizeIdleTimeout(ConfigurableJettyWebServerFactory factory, Duration connectionTimeout) {
 		factory.addServerCustomizers((server) -> {
 			for (org.eclipse.jetty.server.Connector connector : server.getConnectors()) {
 				if (connector instanceof AbstractConnector) {
-					((AbstractConnector) connector)
-							.setIdleTimeout(connectionTimeout.toMillis());
+					((AbstractConnector) connector).setIdleTimeout(connectionTimeout.toMillis());
 				}
 			}
 		});
 	}
 
-	private void customizeMaxHttpPostSize(ConfigurableJettyWebServerFactory factory,
-			int maxHttpPostSize) {
+	private void customizeMaxHttpFormPostSize(ConfigurableJettyWebServerFactory factory, int maxHttpFormPostSize) {
 		factory.addServerCustomizers(new JettyServerCustomizer() {
 
 			@Override
 			public void customize(Server server) {
-				setHandlerMaxHttpPostSize(maxHttpPostSize, server.getHandlers());
+				setHandlerMaxHttpFormPostSize(maxHttpFormPostSize, server.getHandlers());
 			}
 
-			private void setHandlerMaxHttpPostSize(int maxHttpPostSize,
-					Handler... handlers) {
+			private void setHandlerMaxHttpFormPostSize(int maxHttpPostSize, Handler... handlers) {
 				for (Handler handler : handlers) {
 					if (handler instanceof ContextHandler) {
-						((ContextHandler) handler).setMaxFormContentSize(maxHttpPostSize);
+						((ContextHandler) handler).setMaxFormContentSize(maxHttpFormPostSize);
 					}
 					else if (handler instanceof HandlerWrapper) {
-						setHandlerMaxHttpPostSize(maxHttpPostSize,
-								((HandlerWrapper) handler).getHandler());
+						setHandlerMaxHttpFormPostSize(maxHttpFormPostSize, ((HandlerWrapper) handler).getHandler());
 					}
 					else if (handler instanceof HandlerCollection) {
-						setHandlerMaxHttpPostSize(maxHttpPostSize,
-								((HandlerCollection) handler).getHandlers());
+						setHandlerMaxHttpFormPostSize(maxHttpFormPostSize, ((HandlerCollection) handler).getHandlers());
 					}
 				}
 			}

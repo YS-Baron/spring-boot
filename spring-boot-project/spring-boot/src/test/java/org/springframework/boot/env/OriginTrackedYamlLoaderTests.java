@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,22 @@
 
 package org.springframework.boot.env;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.yaml.snakeyaml.constructor.ConstructorException;
 
 import org.springframework.boot.origin.OriginTrackedValue;
 import org.springframework.boot.origin.TextResourceOrigin;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 /**
  * Tests for {@link OriginTrackedYamlLoader}.
@@ -86,8 +90,7 @@ public class OriginTrackedYamlLoaderTests {
 	@Test
 	public void processMultiline() {
 		OriginTrackedValue education = getValue("education");
-		assertThat(education.toString())
-				.isEqualTo("4 GCSEs\n3 A-Levels\nBSc in the Internet of Things\n");
+		assertThat(education.toString()).isEqualTo("4 GCSEs\n3 A-Levels\nBSc in the Internet of Things\n");
 		assertThat(getLocation(education)).isEqualTo("16:12");
 	}
 
@@ -115,6 +118,14 @@ public class OriginTrackedYamlLoaderTests {
 		assertThat(getLocation(empty)).isEqualTo("27:8");
 		assertThat(nullValue.getValue()).isEqualTo("");
 		assertThat(getLocation(nullValue)).isEqualTo("28:13");
+	}
+
+	@Test
+	public void unsupportedType() throws Exception {
+		String yaml = "value: !!java.net.URL [!!java.lang.String [!!java.lang.StringBuilder [\"http://localhost:9000/\"]]]";
+		Resource resource = new ByteArrayResource(yaml.getBytes(StandardCharsets.UTF_8));
+		this.loader = new OriginTrackedYamlLoader(resource);
+		assertThatExceptionOfType(ConstructorException.class).isThrownBy(this.loader::load);
 	}
 
 	private OriginTrackedValue getValue(String name) {

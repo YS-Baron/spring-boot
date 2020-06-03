@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,12 +71,10 @@ public class DataJpaTestIntegrationTests {
 
 	@Test
 	public void testEntityManagerPersistAndGetId() {
-		Long id = this.entities.persistAndGetId(new ExampleEntity("spring", "123"),
-				Long.class);
+		Long id = this.entities.persistAndGetId(new ExampleEntity("spring", "123"), Long.class);
 		assertThat(id).isNotNull();
-		String reference = this.jdbcTemplate.queryForObject(
-				"SELECT REFERENCE FROM EXAMPLE_ENTITY WHERE ID = ?", new Object[] { id },
-				String.class);
+		String reference = this.jdbcTemplate.queryForObject("SELECT REFERENCE FROM EXAMPLE_ENTITY WHERE ID = ?",
+				new Object[] { id }, String.class);
 		assertThat(reference).isEqualTo("123");
 	}
 
@@ -91,27 +89,24 @@ public class DataJpaTestIntegrationTests {
 
 	@Test
 	public void replacesDefinedDataSourceWithEmbeddedDefault() throws Exception {
-		String product = this.dataSource.getConnection().getMetaData()
-				.getDatabaseProductName();
+		String product = this.dataSource.getConnection().getMetaData().getDatabaseProductName();
 		assertThat(product).isEqualTo("H2");
 	}
 
 	@Test
 	public void didNotInjectExampleComponent() {
-		assertThatExceptionOfType(NoSuchBeanDefinitionException.class).isThrownBy(
-				() -> this.applicationContext.getBean(ExampleComponent.class));
+		assertThatExceptionOfType(NoSuchBeanDefinitionException.class)
+				.isThrownBy(() -> this.applicationContext.getBean(ExampleComponent.class));
 	}
 
 	@Test
 	public void flywayAutoConfigurationWasImported() {
-		assertThat(this.applicationContext)
-				.has(importedAutoConfiguration(FlywayAutoConfiguration.class));
+		assertThat(this.applicationContext).has(importedAutoConfiguration(FlywayAutoConfiguration.class));
 	}
 
 	@Test
 	public void liquibaseAutoConfigurationWasImported() {
-		assertThat(this.applicationContext)
-				.has(importedAutoConfiguration(LiquibaseAutoConfiguration.class));
+		assertThat(this.applicationContext).has(importedAutoConfiguration(LiquibaseAutoConfiguration.class));
 	}
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import static org.hamcrest.Matchers.allOf;
  *
  * @author Phillip Webb
  * @author Andy Wilkinson
+ * @since 2.0.0
  */
 public class OutputCapture implements TestRule {
 
@@ -50,6 +51,7 @@ public class OutputCapture implements TestRule {
 	@Override
 	public Statement apply(Statement base, Description description) {
 		return new Statement() {
+
 			@Override
 			public void evaluate() throws Throwable {
 				captureOutput();
@@ -68,11 +70,11 @@ public class OutputCapture implements TestRule {
 					}
 				}
 			}
+
 		};
 	}
 
 	protected void captureOutput() {
-		// FIXME AnsiOutput.setEnabled(Enabled.NEVER);
 		this.copy = new ByteArrayOutputStream();
 		this.captureOut = new CaptureOutputStream(System.out, this.copy);
 		this.captureErr = new CaptureOutputStream(System.err, this.copy);
@@ -81,7 +83,6 @@ public class OutputCapture implements TestRule {
 	}
 
 	protected void releaseOutput() {
-		// FIXME AnsiOutput.setEnabled(Enabled.DETECT);
 		System.setOut(this.captureOut.getOriginal());
 		System.setErr(this.captureErr.getOriginal());
 		this.copy = null;

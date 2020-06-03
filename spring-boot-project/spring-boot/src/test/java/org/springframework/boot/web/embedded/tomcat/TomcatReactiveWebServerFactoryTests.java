@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2019 the original author or authors.
+ * Copyright 2012-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.springframework.boot.web.embedded.tomcat;
 
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleEvent;
@@ -30,11 +31,14 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 
+import org.springframework.boot.web.reactive.server.AbstractReactiveWebServerFactory;
 import org.springframework.boot.web.reactive.server.AbstractReactiveWebServerFactoryTests;
+import org.springframework.boot.web.server.Ssl;
 import org.springframework.http.server.reactive.HttpHandler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -46,8 +50,7 @@ import static org.mockito.Mockito.verify;
  * @author Brian Clozel
  * @author Madhura Bhave
  */
-public class TomcatReactiveWebServerFactoryTests
-		extends AbstractReactiveWebServerFactoryTests {
+public class TomcatReactiveWebServerFactoryTests extends AbstractReactiveWebServerFactoryTests {
 
 	@Override
 	protected TomcatReactiveWebServerFactory getFactory() {
@@ -82,8 +85,13 @@ public class TomcatReactiveWebServerFactoryTests
 	@Test
 	public void defaultTomcatListeners() {
 		TomcatReactiveWebServerFactory factory = getFactory();
-		assertThat(factory.getContextLifecycleListeners()).hasSize(1).first()
-				.isInstanceOf(AprLifecycleListener.class);
+		if (AprLifecycleListener.isAprAvailable()) {
+			assertThat(factory.getContextLifecycleListeners()).hasSize(1).first()
+					.isInstanceOf(AprLifecycleListener.class);
+		}
+		else {
+			assertThat(factory.getContextLifecycleListeners()).isEmpty();
+		}
 	}
 
 	@Test
@@ -103,16 +111,15 @@ public class TomcatReactiveWebServerFactoryTests
 	@Test
 	public void setNullConnectorCustomizersShouldThrowException() {
 		TomcatReactiveWebServerFactory factory = getFactory();
-		assertThatIllegalArgumentException()
-				.isThrownBy(() -> factory.setTomcatConnectorCustomizers(null))
+		assertThatIllegalArgumentException().isThrownBy(() -> factory.setTomcatConnectorCustomizers(null))
 				.withMessageContaining("Customizers must not be null");
 	}
 
 	@Test
 	public void addNullAddConnectorCustomizersShouldThrowException() {
 		TomcatReactiveWebServerFactory factory = getFactory();
-		assertThatIllegalArgumentException().isThrownBy(
-				() -> factory.addConnectorCustomizers((TomcatConnectorCustomizer[]) null))
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> factory.addConnectorCustomizers((TomcatConnectorCustomizer[]) null))
 				.withMessageContaining("Customizers must not be null");
 	}
 
@@ -150,6 +157,36 @@ public class TomcatReactiveWebServerFactoryTests
 		assertThat(context.getClearReferencesObjectStreamClassCaches()).isFalse();
 		assertThat(context.getClearReferencesRmiTargets()).isFalse();
 		assertThat(context.getClearReferencesThreadLocals()).isFalse();
+	}
+
+	@Test
+	@Override
+	public void sslWithInvalidAliasFailsDuringStartup() {
+		String keyStore = "classpath:test.jks";
+		String keyPassword = "password";
+		AbstractReactiveWebServerFactory factory = getFactory();
+		Ssl ssl = new Ssl();
+		ssl.setKeyStore(keyStore);
+		ssl.setKeyPassword(keyPassword);
+		ssl.setKeyAlias("test-alias-404");
+		factory.setSsl(ssl);
+		assertThatThrownBy(() -> factory.getWebServer(new EchoHandler()).start())
+				.isInstanceOf(ConnectorStartFailedException.class);
+	}
+
+	@Test
+	public void whenGetTomcatWebServerIsOverriddenThenWebServerCreationCanBeCustomized() {
+		AtomicReference<TomcatWebServer> webServerReference = new AtomicReference<>();
+		TomcatWebServer webServer = (TomcatWebServer) new TomcatReactiveWebServerFactory() {
+
+			@Override
+			protected TomcatWebServer getTomcatWebServer(Tomcat tomcat) {
+				webServerReference.set(new TomcatWebServer(tomcat));
+				return webServerReference.get();
+			}
+
+		}.getWebServer(new EchoHandler());
+		assertThat(webServerReference).hasValue(webServer);
 	}
 
 }

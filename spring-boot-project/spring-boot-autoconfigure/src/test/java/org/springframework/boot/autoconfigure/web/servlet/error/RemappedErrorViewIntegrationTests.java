@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,24 +58,21 @@ public class RemappedErrorViewIntegrationTests {
 
 	@Test
 	public void directAccessToErrorPage() {
-		String content = this.template.getForObject(
-				"http://localhost:" + this.port + "/spring/error", String.class);
+		String content = this.template.getForObject("http://localhost:" + this.port + "/spring/error", String.class);
 		assertThat(content).contains("error");
 		assertThat(content).contains("999");
 	}
 
 	@Test
 	public void forwardToErrorPage() {
-		String content = this.template
-				.getForObject("http://localhost:" + this.port + "/spring/", String.class);
+		String content = this.template.getForObject("http://localhost:" + this.port + "/spring/", String.class);
 		assertThat(content).contains("error");
 		assertThat(content).contains("500");
 	}
 
 	@Configuration
 	@Import({ PropertyPlaceholderAutoConfiguration.class, WebMvcAutoConfiguration.class,
-			HttpMessageConvertersAutoConfiguration.class,
-			ServletWebServerFactoryAutoConfiguration.class,
+			HttpMessageConvertersAutoConfiguration.class, ServletWebServerFactoryAutoConfiguration.class,
 			DispatcherServletAutoConfiguration.class, ErrorMvcAutoConfiguration.class })
 	@Controller
 	public static class TestConfiguration implements ErrorPageRegistrar {
@@ -92,8 +89,8 @@ public class RemappedErrorViewIntegrationTests {
 
 		// For manual testing
 		public static void main(String[] args) {
-			new SpringApplicationBuilder(TestConfiguration.class)
-					.properties("spring.mvc.servlet.path:spring/*").run(args);
+			new SpringApplicationBuilder(TestConfiguration.class).properties("spring.mvc.servlet.path:spring/*")
+					.run(args);
 		}
 
 	}

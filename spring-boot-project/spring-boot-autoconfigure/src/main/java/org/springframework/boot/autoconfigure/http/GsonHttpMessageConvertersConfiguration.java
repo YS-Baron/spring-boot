@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,6 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
  *
  * @author Andy Wilkinson
  * @author Eddú Meléndez
- * @since 1.2.2
  */
 @Configuration
 @ConditionalOnClass(Gson.class)
@@ -56,14 +55,14 @@ class GsonHttpMessageConvertersConfiguration {
 
 	}
 
-	private static class PreferGsonOrJacksonAndJsonbUnavailableCondition
-			extends AnyNestedCondition {
+	private static class PreferGsonOrJacksonAndJsonbUnavailableCondition extends AnyNestedCondition {
 
 		PreferGsonOrJacksonAndJsonbUnavailableCondition() {
 			super(ConfigurationPhase.REGISTER_BEAN);
 		}
 
-		@ConditionalOnProperty(name = HttpMessageConvertersAutoConfiguration.PREFERRED_MAPPER_PROPERTY, havingValue = "gson")
+		@ConditionalOnProperty(name = HttpMessageConvertersAutoConfiguration.PREFERRED_MAPPER_PROPERTY,
+				havingValue = "gson")
 		static class GsonPreferred {
 
 		}
@@ -75,8 +74,7 @@ class GsonHttpMessageConvertersConfiguration {
 
 	}
 
-	private static class JacksonAndJsonbUnavailableCondition
-			extends NoneNestedConditions {
+	private static class JacksonAndJsonbUnavailableCondition extends NoneNestedConditions {
 
 		JacksonAndJsonbUnavailableCondition() {
 			super(ConfigurationPhase.REGISTER_BEAN);
@@ -87,7 +85,8 @@ class GsonHttpMessageConvertersConfiguration {
 
 		}
 
-		@ConditionalOnProperty(name = HttpMessageConvertersAutoConfiguration.PREFERRED_MAPPER_PROPERTY, havingValue = "jsonb")
+		@ConditionalOnProperty(name = HttpMessageConvertersAutoConfiguration.PREFERRED_MAPPER_PROPERTY,
+				havingValue = "jsonb")
 		static class JsonbPreferred {
 
 		}

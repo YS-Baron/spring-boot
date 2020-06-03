@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,8 +60,7 @@ public class HttpTraceAutoConfiguration {
 
 		@Bean
 		@ConditionalOnMissingBean
-		public HttpTraceFilter httpTraceFilter(HttpTraceRepository repository,
-				HttpExchangeTracer tracer) {
+		public HttpTraceFilter httpTraceFilter(HttpTraceRepository repository, HttpExchangeTracer tracer) {
 			return new HttpTraceFilter(repository, tracer);
 		}
 
@@ -73,10 +72,9 @@ public class HttpTraceAutoConfiguration {
 
 		@Bean
 		@ConditionalOnMissingBean
-		public HttpTraceWebFilter httpTraceWebFilter(HttpTraceRepository repository,
-				HttpExchangeTracer tracer, HttpTraceProperties traceProperties) {
-			return new HttpTraceWebFilter(repository, tracer,
-					traceProperties.getInclude());
+		public HttpTraceWebFilter httpTraceWebFilter(HttpTraceRepository repository, HttpExchangeTracer tracer,
+				HttpTraceProperties traceProperties) {
+			return new HttpTraceWebFilter(repository, tracer, traceProperties.getInclude());
 		}
 
 	}

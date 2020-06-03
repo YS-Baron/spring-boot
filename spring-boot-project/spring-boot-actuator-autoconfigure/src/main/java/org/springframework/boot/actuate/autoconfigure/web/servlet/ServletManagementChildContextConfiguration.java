@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +44,7 @@ import org.springframework.boot.autoconfigure.web.embedded.TomcatWebServerFactor
 import org.springframework.boot.autoconfigure.web.embedded.UndertowWebServerFactoryCustomizer;
 import org.springframework.boot.autoconfigure.web.servlet.ServletWebServerFactoryCustomizer;
 import org.springframework.boot.autoconfigure.web.servlet.TomcatServletWebServerFactoryCustomizer;
+import org.springframework.boot.autoconfigure.web.servlet.UndertowServletWebServerFactoryCustomizer;
 import org.springframework.boot.web.embedded.jetty.JettyServletWebServerFactory;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.embedded.undertow.UndertowServletWebServerFactory;
@@ -107,25 +108,20 @@ class ServletManagementChildContextConfiguration {
 
 	}
 
-	static class ServletManagementWebServerFactoryCustomizer extends
-			ManagementWebServerFactoryCustomizer<ConfigurableServletWebServerFactory> {
+	static class ServletManagementWebServerFactoryCustomizer
+			extends ManagementWebServerFactoryCustomizer<ConfigurableServletWebServerFactory> {
 
 		ServletManagementWebServerFactoryCustomizer(ListableBeanFactory beanFactory) {
-			super(beanFactory, ServletWebServerFactoryCustomizer.class,
-					TomcatServletWebServerFactoryCustomizer.class,
-					TomcatWebServerFactoryCustomizer.class,
-					JettyWebServerFactoryCustomizer.class,
-					UndertowWebServerFactoryCustomizer.class);
+			super(beanFactory, ServletWebServerFactoryCustomizer.class, TomcatServletWebServerFactoryCustomizer.class,
+					TomcatWebServerFactoryCustomizer.class, JettyWebServerFactoryCustomizer.class,
+					UndertowServletWebServerFactoryCustomizer.class, UndertowWebServerFactoryCustomizer.class);
 		}
 
 		@Override
 		protected void customize(ConfigurableServletWebServerFactory webServerFactory,
-				ManagementServerProperties managementServerProperties,
-				ServerProperties serverProperties) {
-			super.customize(webServerFactory, managementServerProperties,
-					serverProperties);
-			webServerFactory.setContextPath(
-					managementServerProperties.getServlet().getContextPath());
+				ManagementServerProperties managementServerProperties, ServerProperties serverProperties) {
+			super.customize(webServerFactory, managementServerProperties, serverProperties);
+			webServerFactory.setContextPath(managementServerProperties.getServlet().getContextPath());
 		}
 
 	}

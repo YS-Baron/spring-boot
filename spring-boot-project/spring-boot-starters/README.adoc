@@ -67,6 +67,9 @@ do as they were designed before this was clarified.
 | https://dozermapper.github.io/[Dozer]
 | https://github.com/DozerMapper/dozer
 
+| Elegant Error Handling for Spring Boot
+| https://github.com/alimate/errors-spring-boot-starter
+
 | ErroREST exception handler
 | https://github.com/mkopylec/errorest-spring-boot-starter
 
@@ -124,6 +127,9 @@ do as they were designed before this was clarified.
 | https://github.com/jbosstm/narayana[Narayana]
 | https://github.com/snowdrop/narayana-spring-boot
 
+| https://developer.nexmo.com/[Nexmo]
+| https://github.com/nexmo/nexmo-spring-boot-starter
+
 | https://github.com/nutzam/nutz[Nutz]
 | https://github.com/nutzam/nutzmore
 
@@ -173,7 +179,7 @@ do as they were designed before this was clarified.
 | https://github.com/Catalysts/structurizr-extensions
 
 | https://vaadin.com/[Vaadin]
-| https://github.com/vaadin/spring/tree/master/vaadin-spring-boot-starter
+| https://github.com/vaadin/platform/tree/master/vaadin-spring-boot-starter
 
 | https://github.com/valiktor/valiktor[Valiktor]
 | https://github.com/valiktor/valiktor/tree/master/valiktor-spring/valiktor-spring-boot-starter

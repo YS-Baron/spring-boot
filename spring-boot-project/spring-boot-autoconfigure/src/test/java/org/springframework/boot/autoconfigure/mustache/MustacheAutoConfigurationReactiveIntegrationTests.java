@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,22 +59,21 @@ public class MustacheAutoConfigurationReactiveIntegrationTests {
 
 	@Test
 	public void testHomePage() {
-		String result = this.client.get().uri("/").exchange().expectStatus().isOk()
-				.expectBody(String.class).returnResult().getResponseBody();
+		String result = this.client.get().uri("/").exchange().expectStatus().isOk().expectBody(String.class)
+				.returnResult().getResponseBody();
 		assertThat(result).contains("Hello App").contains("Hello World");
 	}
 
 	@Test
 	public void testPartialPage() {
-		String result = this.client.get().uri("/partial").exchange().expectStatus().isOk()
-				.expectBody(String.class).returnResult().getResponseBody();
+		String result = this.client.get().uri("/partial").exchange().expectStatus().isOk().expectBody(String.class)
+				.returnResult().getResponseBody();
 		assertThat(result).contains("Hello App").contains("Hello World");
 	}
 
 	@Configuration
-	@Import({ ReactiveWebServerFactoryAutoConfiguration.class,
-			WebFluxAutoConfiguration.class, HttpHandlerAutoConfiguration.class,
-			PropertyPlaceholderAutoConfiguration.class })
+	@Import({ ReactiveWebServerFactoryAutoConfiguration.class, WebFluxAutoConfiguration.class,
+			HttpHandlerAutoConfiguration.class, PropertyPlaceholderAutoConfiguration.class })
 	@Controller
 	public static class Application {
 
@@ -96,9 +95,8 @@ public class MustacheAutoConfigurationReactiveIntegrationTests {
 
 		@Bean
 		public MustacheViewResolver viewResolver() {
-			Mustache.Compiler compiler = Mustache.compiler().withLoader(
-					new MustacheResourceTemplateLoader("classpath:/mustache-templates/",
-							".html"));
+			Mustache.Compiler compiler = Mustache.compiler()
+					.withLoader(new MustacheResourceTemplateLoader("classpath:/mustache-templates/", ".html"));
 			MustacheViewResolver resolver = new MustacheViewResolver(compiler);
 			resolver.setPrefix("classpath:/mustache-templates/");
 			resolver.setSuffix(".html");

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,11 +60,10 @@ public class ValidationAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public static MethodValidationPostProcessor methodValidationPostProcessor(
-			Environment environment, @Lazy Validator validator) {
+	public static MethodValidationPostProcessor methodValidationPostProcessor(Environment environment,
+			@Lazy Validator validator) {
 		MethodValidationPostProcessor processor = new MethodValidationPostProcessor();
-		boolean proxyTargetClass = environment
-				.getProperty("spring.aop.proxy-target-class", Boolean.class, true);
+		boolean proxyTargetClass = environment.getProperty("spring.aop.proxy-target-class", Boolean.class, true);
 		processor.setProxyTargetClass(proxyTargetClass);
 		processor.setValidator(validator);
 		return processor;

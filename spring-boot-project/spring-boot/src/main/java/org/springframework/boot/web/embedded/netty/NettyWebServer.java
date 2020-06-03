@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.springframework.boot.web.embedded.netty;
 
 import java.time.Duration;
 
+import io.netty.channel.unix.Errors.NativeIoException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import reactor.netty.ChannelBindException;
@@ -42,6 +43,11 @@ import org.springframework.util.Assert;
  */
 public class NettyWebServer implements WebServer {
 
+	/**
+	 * Permission denied error code from {@code errno.h}.
+	 */
+	private static final int ERROR_NO_EACCES = -13;
+
 	private static final Log logger = LogFactory.getLog(NettyWebServer.class);
 
 	private final HttpServer httpServer;
@@ -52,8 +58,7 @@ public class NettyWebServer implements WebServer {
 
 	private DisposableServer disposableServer;
 
-	public NettyWebServer(HttpServer httpServer, ReactorHttpHandlerAdapter handlerAdapter,
-			Duration lifecycleTimeout) {
+	public NettyWebServer(HttpServer httpServer, ReactorHttpHandlerAdapter handlerAdapter, Duration lifecycleTimeout) {
 		Assert.notNull(httpServer, "HttpServer must not be null");
 		Assert.notNull(handlerAdapter, "HandlerAdapter must not be null");
 		this.httpServer = httpServer;
@@ -69,8 +74,8 @@ public class NettyWebServer implements WebServer {
 			}
 			catch (Exception ex) {
 				ChannelBindException bindException = findBindException(ex);
-				if (bindException != null) {
-					throw new PortInUseException(bindException.localPort());
+				if (bindException != null && !isPermissionDenied(bindException.getCause())) {
+					throw new PortInUseException(bindException.localPort(), ex);
 				}
 				throw new WebServerException("Unable to start Netty", ex);
 			}
@@ -79,10 +84,20 @@ public class NettyWebServer implements WebServer {
 		}
 	}
 
+	private boolean isPermissionDenied(Throwable bindExceptionCause) {
+		try {
+			if (bindExceptionCause instanceof NativeIoException) {
+				return ((NativeIoException) bindExceptionCause).expectedErr() == ERROR_NO_EACCES;
+			}
+		}
+		catch (Throwable ex) {
+		}
+		return false;
+	}
+
 	private DisposableServer startHttpServer() {
 		if (this.lifecycleTimeout != null) {
-			return this.httpServer.handle(this.handlerAdapter)
-					.bindNow(this.lifecycleTimeout);
+			return this.httpServer.handle(this.handlerAdapter).bindNow(this.lifecycleTimeout);
 		}
 		return this.httpServer.handle(this.handlerAdapter).bindNow();
 	}

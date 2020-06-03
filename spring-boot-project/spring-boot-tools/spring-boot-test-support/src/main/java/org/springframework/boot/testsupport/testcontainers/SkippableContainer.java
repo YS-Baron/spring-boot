@@ -32,6 +32,7 @@ import org.testcontainers.containers.GenericContainer;
  *
  * @param <T> type of the underlying container
  * @author Andy Wilkinson
+ * @since 2.1.0
  */
 public class SkippableContainer<T> implements TestRule {
 
@@ -52,14 +53,12 @@ public class SkippableContainer<T> implements TestRule {
 			return new SkipStatement();
 		}
 		this.container = this.containerFactory.get();
-		return ((FailureDetectingExternalResource) this.container).apply(base,
-				description);
+		return ((FailureDetectingExternalResource) this.container).apply(base, description);
 	}
 
 	public T getContainer() {
 		if (this.container == null) {
-			throw new IllegalStateException(
-					"Container cannot be accessed prior to test invocation");
+			throw new IllegalStateException("Container cannot be accessed prior to test invocation");
 		}
 		return this.container;
 	}
@@ -68,8 +67,7 @@ public class SkippableContainer<T> implements TestRule {
 
 		@Override
 		public void evaluate() {
-			throw new AssumptionViolatedException(
-					"Could not find a valid Docker environment.");
+			throw new AssumptionViolatedException("Could not find a valid Docker environment.");
 		}
 
 	}

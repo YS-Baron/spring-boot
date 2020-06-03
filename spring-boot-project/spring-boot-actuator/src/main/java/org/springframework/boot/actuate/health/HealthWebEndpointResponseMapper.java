@@ -16,11 +16,15 @@
 
 package org.springframework.boot.actuate.health;
 
+import java.security.Principal;
 import java.util.Set;
 import java.util.function.Supplier;
 
 import org.springframework.boot.actuate.endpoint.SecurityContext;
 import org.springframework.boot.actuate.endpoint.web.WebEndpointResponse;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.CollectionUtils;
 
 /**
@@ -37,8 +41,8 @@ public class HealthWebEndpointResponseMapper {
 
 	private final Set<String> authorizedRoles;
 
-	public HealthWebEndpointResponseMapper(HealthStatusHttpMapper statusHttpMapper,
-			ShowDetails showDetails, Set<String> authorizedRoles) {
+	public HealthWebEndpointResponseMapper(HealthStatusHttpMapper statusHttpMapper, ShowDetails showDetails,
+			Set<String> authorizedRoles) {
 		this.statusHttpMapper = statusHttpMapper;
 		this.showDetails = showDetails;
 		this.authorizedRoles = authorizedRoles;
@@ -55,8 +59,7 @@ public class HealthWebEndpointResponseMapper {
 	 * @param securityContext the security context
 	 * @return the mapped response
 	 */
-	public WebEndpointResponse<Health> mapDetails(Supplier<Health> health,
-			SecurityContext securityContext) {
+	public WebEndpointResponse<Health> mapDetails(Supplier<Health> health, SecurityContext securityContext) {
 		if (canSeeDetails(securityContext, this.showDetails)) {
 			Health healthDetails = health.get();
 			if (healthDetails != null) {
@@ -73,8 +76,7 @@ public class HealthWebEndpointResponseMapper {
 	 * @param securityContext the security context
 	 * @return the mapped response
 	 */
-	public WebEndpointResponse<Health> map(Health health,
-			SecurityContext securityContext) {
+	public WebEndpointResponse<Health> map(Health health, SecurityContext securityContext) {
 		return map(health, securityContext, this.showDetails);
 	}
 
@@ -86,8 +88,7 @@ public class HealthWebEndpointResponseMapper {
 	 * @param showDetails when to show details in the response
 	 * @return the mapped response
 	 */
-	public WebEndpointResponse<Health> map(Health health, SecurityContext securityContext,
-			ShowDetails showDetails) {
+	public WebEndpointResponse<Health> map(Health health, SecurityContext securityContext, ShowDetails showDetails) {
 		if (!canSeeDetails(securityContext, showDetails)) {
 			health = Health.status(health.getStatus()).build();
 		}
@@ -99,12 +100,9 @@ public class HealthWebEndpointResponseMapper {
 		return new WebEndpointResponse<>(health, status);
 	}
 
-	private boolean canSeeDetails(SecurityContext securityContext,
-			ShowDetails showDetails) {
-		if (showDetails == ShowDetails.NEVER
-				|| (showDetails == ShowDetails.WHEN_AUTHORIZED
-						&& (securityContext.getPrincipal() == null
-								|| !isUserInRole(securityContext)))) {
+	private boolean canSeeDetails(SecurityContext securityContext, ShowDetails showDetails) {
+		if (showDetails == ShowDetails.NEVER || (showDetails == ShowDetails.WHEN_AUTHORIZED
+				&& (securityContext.getPrincipal() == null || !isUserInRole(securityContext)))) {
 			return false;
 		}
 		return true;
@@ -114,12 +112,29 @@ public class HealthWebEndpointResponseMapper {
 		if (CollectionUtils.isEmpty(this.authorizedRoles)) {
 			return true;
 		}
+		Principal principal = securityContext.getPrincipal();
+		boolean checkAuthorities = isSpringSecurityAuthentication(principal);
 		for (String role : this.authorizedRoles) {
 			if (securityContext.isUserInRole(role)) {
 				return true;
 			}
+			if (checkAuthorities) {
+				Authentication authentication = (Authentication) principal;
+				for (GrantedAuthority authority : authentication.getAuthorities()) {
+					String name = authority.getAuthority();
+					if (role.equals(name)) {
+						return true;
+					}
+				}
+			}
 		}
+
 		return false;
+	}
+
+	private boolean isSpringSecurityAuthentication(Principal principal) {
+		return ClassUtils.isPresent("org.springframework.security.core.Authentication", null)
+				&& (principal instanceof Authentication);
 	}
 
 }

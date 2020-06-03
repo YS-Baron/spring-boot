@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,8 +54,7 @@ public class JerseyAutoConfigurationCustomLoadOnStartupTests {
 
 	@Test
 	public void contextLoads() {
-		assertThat(this.context.getBean("jerseyServletRegistration"))
-				.hasFieldOrPropertyWithValue("loadOnStartup", 5);
+		assertThat(this.context.getBean("jerseyServletRegistration")).hasFieldOrPropertyWithValue("loadOnStartup", 5);
 	}
 
 	@MinimalWebConfiguration
@@ -71,8 +70,8 @@ public class JerseyAutoConfigurationCustomLoadOnStartupTests {
 	@Retention(RetentionPolicy.RUNTIME)
 	@Documented
 	@Configuration
-	@Import({ ServletWebServerFactoryAutoConfiguration.class,
-			JerseyAutoConfiguration.class, PropertyPlaceholderAutoConfiguration.class })
+	@Import({ ServletWebServerFactoryAutoConfiguration.class, JerseyAutoConfiguration.class,
+			PropertyPlaceholderAutoConfiguration.class })
 	protected @interface MinimalWebConfiguration {
 
 	}

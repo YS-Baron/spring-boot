@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,12 +43,12 @@ import org.springframework.context.annotation.Configuration;
  * @since 2.1.0
  */
 @Configuration
-@AutoConfigureBefore({ CompositeMeterRegistryAutoConfiguration.class,
-		SimpleMetricsExportAutoConfiguration.class })
+@AutoConfigureBefore({ CompositeMeterRegistryAutoConfiguration.class, SimpleMetricsExportAutoConfiguration.class })
 @AutoConfigureAfter(MetricsAutoConfiguration.class)
 @ConditionalOnBean(Clock.class)
 @ConditionalOnClass(AppOpticsMeterRegistry.class)
-@ConditionalOnProperty(prefix = "management.metrics.export.appoptics", name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "management.metrics.export.appoptics", name = "enabled", havingValue = "true",
+		matchIfMissing = true)
 @EnableConfigurationProperties(AppOpticsProperties.class)
 public class AppOpticsMetricsExportAutoConfiguration {
 
@@ -66,12 +66,9 @@ public class AppOpticsMetricsExportAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public AppOpticsMeterRegistry appOpticsMeterRegistry(AppOpticsConfig config,
-			Clock clock) {
-		return AppOpticsMeterRegistry.builder(config).clock(clock)
-				.httpClient(
-						new HttpUrlConnectionSender(this.properties.getConnectTimeout(),
-								this.properties.getReadTimeout()))
+	public AppOpticsMeterRegistry appOpticsMeterRegistry(AppOpticsConfig config, Clock clock) {
+		return AppOpticsMeterRegistry.builder(config).clock(clock).httpClient(
+				new HttpUrlConnectionSender(this.properties.getConnectTimeout(), this.properties.getReadTimeout()))
 				.build();
 	}
 

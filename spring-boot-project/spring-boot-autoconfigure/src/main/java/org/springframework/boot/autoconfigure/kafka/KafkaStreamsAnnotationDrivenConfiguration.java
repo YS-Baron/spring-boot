@@ -58,8 +58,7 @@ class KafkaStreamsAnnotationDrivenConfiguration {
 		if (this.properties.getStreams().getApplicationId() == null) {
 			String applicationName = environment.getProperty("spring.application.name");
 			if (applicationName == null) {
-				throw new InvalidConfigurationPropertyValueException(
-						"spring.kafka.streams.application-id", null,
+				throw new InvalidConfigurationPropertyValueException("spring.kafka.streams.application-id", null,
 						"This property is mandatory and fallback 'spring.application.name' is not set either.");
 			}
 			streamsProperties.put(StreamsConfig.APPLICATION_ID_CONFIG, applicationName);
@@ -80,8 +79,7 @@ class KafkaStreamsAnnotationDrivenConfiguration {
 
 		private final StreamsBuilderFactoryBean factoryBean;
 
-		KafkaStreamsFactoryBeanConfigurer(KafkaProperties properties,
-				StreamsBuilderFactoryBean factoryBean) {
+		KafkaStreamsFactoryBeanConfigurer(KafkaProperties properties, StreamsBuilderFactoryBean factoryBean) {
 			this.properties = properties;
 			this.factoryBean = factoryBean;
 		}

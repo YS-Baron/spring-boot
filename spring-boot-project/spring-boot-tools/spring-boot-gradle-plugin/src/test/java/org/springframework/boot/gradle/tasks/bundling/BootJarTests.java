@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,16 +32,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class BootJarTests extends AbstractBootArchiveTests<BootJar> {
 
 	public BootJarTests() {
-		super(BootJar.class, "org.springframework.boot.loader.JarLauncher",
-				"BOOT-INF/lib", "BOOT-INF/classes");
+		super(BootJar.class, "org.springframework.boot.loader.JarLauncher", "BOOT-INF/lib/", "BOOT-INF/classes/");
 	}
 
 	@Test
 	public void contentCanBeAddedToBootInfUsingCopySpecFromGetter() throws IOException {
 		BootJar bootJar = getTask();
 		bootJar.setMainClassName("com.example.Application");
-		bootJar.getBootInf().into("test")
-				.from(new File("build.gradle").getAbsolutePath());
+		bootJar.getBootInf().into("test").from(new File("build.gradle").getAbsolutePath());
 		bootJar.execute();
 		try (JarFile jarFile = new JarFile(bootJar.getArchivePath())) {
 			assertThat(jarFile.getJarEntry("BOOT-INF/test/build.gradle")).isNotNull();
@@ -52,8 +50,7 @@ public class BootJarTests extends AbstractBootArchiveTests<BootJar> {
 	public void contentCanBeAddedToBootInfUsingCopySpecAction() throws IOException {
 		BootJar bootJar = getTask();
 		bootJar.setMainClassName("com.example.Application");
-		bootJar.bootInf((copySpec) -> copySpec.into("test")
-				.from(new File("build.gradle").getAbsolutePath()));
+		bootJar.bootInf((copySpec) -> copySpec.into("test").from(new File("build.gradle").getAbsolutePath()));
 		bootJar.execute();
 		try (JarFile jarFile = new JarFile(bootJar.getArchivePath())) {
 			assertThat(jarFile.getJarEntry("BOOT-INF/test/build.gradle")).isNotNull();

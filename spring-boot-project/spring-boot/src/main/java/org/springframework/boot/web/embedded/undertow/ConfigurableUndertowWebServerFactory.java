@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,8 +31,7 @@ import org.springframework.boot.web.server.ConfigurableWebServerFactory;
  * @see UndertowServletWebServerFactory
  * @see UndertowReactiveWebServerFactory
  */
-public interface ConfigurableUndertowWebServerFactory
-		extends ConfigurableWebServerFactory {
+public interface ConfigurableUndertowWebServerFactory extends ConfigurableWebServerFactory {
 
 	/**
 	 * Add {@link UndertowBuilderCustomizer}s that should be used to customize the
@@ -45,7 +44,12 @@ public interface ConfigurableUndertowWebServerFactory
 	 * Add {@link UndertowDeploymentInfoCustomizer}s that should be used to customize the
 	 * Undertow {@link DeploymentInfo}.
 	 * @param customizers the customizers to add
+	 * @deprecated since 2.1.7 in favor of
+	 * {@link UndertowServletWebServerFactory#addDeploymentInfoCustomizers(UndertowDeploymentInfoCustomizer...)}
+	 * as {@link UndertowReactiveWebServerFactory} does not create a
+	 * {@link DeploymentInfo}
 	 */
+	@Deprecated
 	void addDeploymentInfoCustomizers(UndertowDeploymentInfoCustomizer... customizers);
 
 	/**

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,6 +56,8 @@ import org.springframework.util.unit.DataSize;
  * @author Brian Clozel
  * @author Olivier Lamy
  * @author Chentao Qu
+ * @author Rafiullah Hamedy
+ * @since 1.0.0
  */
 @ConfigurationProperties(prefix = "server", ignoreUnknownFields = true)
 public class ServerProperties {
@@ -110,6 +112,8 @@ public class ServerProperties {
 
 	private final Jetty jetty = new Jetty();
 
+	private final Netty netty = new Netty();
+
 	private final Undertow undertow = new Undertow();
 
 	public Integer getPort() {
@@ -152,10 +156,14 @@ public class ServerProperties {
 		this.maxHttpHeaderSize = maxHttpHeaderSize;
 	}
 
+	@Deprecated
+	@DeprecatedConfigurationProperty(
+			reason = "Each server behaves differently. Use server specific properties instead.")
 	public Duration getConnectionTimeout() {
 		return this.connectionTimeout;
 	}
 
+	@Deprecated
 	public void setConnectionTimeout(Duration connectionTimeout) {
 		this.connectionTimeout = connectionTimeout;
 	}
@@ -190,6 +198,10 @@ public class ServerProperties {
 
 	public Jetty getJetty() {
 		return this.jetty;
+	}
+
+	public Netty getNetty() {
+		return this.netty;
 	}
 
 	public Undertow getUndertow() {
@@ -277,8 +289,7 @@ public class ServerProperties {
 				+ "169\\.254\\.\\d{1,3}\\.\\d{1,3}|" // 169.254/16
 				+ "127\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}|" // 127/8
 				+ "172\\.1[6-9]{1}\\.\\d{1,3}\\.\\d{1,3}|" // 172.16/12
-				+ "172\\.2[0-9]{1}\\.\\d{1,3}\\.\\d{1,3}|"
-				+ "172\\.3[0-1]{1}\\.\\d{1,3}\\.\\d{1,3}|" //
+				+ "172\\.2[0-9]{1}\\.\\d{1,3}\\.\\d{1,3}|" + "172\\.3[0-1]{1}\\.\\d{1,3}\\.\\d{1,3}|" //
 				+ "0:0:0:0:0:0:0:1|::1";
 
 		/**
@@ -325,14 +336,14 @@ public class ServerProperties {
 		private int minSpareThreads = 10;
 
 		/**
-		 * Maximum size of the HTTP post content.
-		 */
-		private DataSize maxHttpPostSize = DataSize.ofMegabytes(2);
-
-		/**
 		 * Maximum size of the HTTP message header.
 		 */
 		private DataSize maxHttpHeaderSize = DataSize.ofBytes(0);
+
+		/**
+		 * Maximum size of the form content in any HTTP post request.
+		 */
+		private DataSize maxHttpFormPostSize = DataSize.ofMegabytes(2);
 
 		/**
 		 * Maximum amount of request body to swallow.
@@ -361,7 +372,7 @@ public class ServerProperties {
 		 * given time. Once the limit has been reached, the operating system may still
 		 * accept connections based on the "acceptCount" property.
 		 */
-		private int maxConnections = 10000;
+		private int maxConnections = 8192;
 
 		/**
 		 * Maximum queue length for incoming connection requests when all possible request
@@ -375,6 +386,12 @@ public class ServerProperties {
 		 * match one and only one character and zero or more characters respectively.
 		 */
 		private List<String> additionalTldSkipPatterns = new ArrayList<>();
+
+		/**
+		 * Amount of time the connector will wait, after accepting a connection, for the
+		 * request URI line to be presented.
+		 */
+		private Duration connectionTimeout;
 
 		/**
 		 * Static resource configuration.
@@ -397,12 +414,23 @@ public class ServerProperties {
 			this.minSpareThreads = minSpareThreads;
 		}
 
+		@Deprecated
+		@DeprecatedConfigurationProperty(replacement = "server.tomcat.max-http-form-post-size")
 		public DataSize getMaxHttpPostSize() {
-			return this.maxHttpPostSize;
+			return this.maxHttpFormPostSize;
 		}
 
+		@Deprecated
 		public void setMaxHttpPostSize(DataSize maxHttpPostSize) {
-			this.maxHttpPostSize = maxHttpPostSize;
+			this.maxHttpFormPostSize = maxHttpPostSize;
+		}
+
+		public DataSize getMaxHttpFormPostSize() {
+			return this.maxHttpFormPostSize;
+		}
+
+		public void setMaxHttpFormPostSize(DataSize maxHttpFormPostSize) {
+			this.maxHttpFormPostSize = maxHttpFormPostSize;
 		}
 
 		public Accesslog getAccesslog() {
@@ -530,6 +558,14 @@ public class ServerProperties {
 
 		public void setAdditionalTldSkipPatterns(List<String> additionalTldSkipPatterns) {
 			this.additionalTldSkipPatterns = additionalTldSkipPatterns;
+		}
+
+		public Duration getConnectionTimeout() {
+			return this.connectionTimeout;
+		}
+
+		public void setConnectionTimeout(Duration connectionTimeout) {
+			this.connectionTimeout = connectionTimeout;
 		}
 
 		public Resource getResource() {
@@ -722,9 +758,9 @@ public class ServerProperties {
 		private final Accesslog accesslog = new Accesslog();
 
 		/**
-		 * Maximum size of the HTTP post or put content.
+		 * Maximum size of the form content in any HTTP post request.
 		 */
-		private DataSize maxHttpPostSize = DataSize.ofBytes(200000);
+		private DataSize maxHttpFormPostSize = DataSize.ofBytes(200000);
 
 		/**
 		 * Number of acceptor threads to use. When the value is -1, the default, the
@@ -738,16 +774,32 @@ public class ServerProperties {
 		 */
 		private Integer selectors = -1;
 
+		/**
+		 * Time that the connection can be idle before it is closed.
+		 */
+		private Duration connectionIdleTimeout;
+
 		public Accesslog getAccesslog() {
 			return this.accesslog;
 		}
 
+		@Deprecated
+		@DeprecatedConfigurationProperty(replacement = "server.jetty.max-http-form-post-size")
 		public DataSize getMaxHttpPostSize() {
-			return this.maxHttpPostSize;
+			return this.maxHttpFormPostSize;
 		}
 
+		@Deprecated
 		public void setMaxHttpPostSize(DataSize maxHttpPostSize) {
-			this.maxHttpPostSize = maxHttpPostSize;
+			this.maxHttpFormPostSize = maxHttpPostSize;
+		}
+
+		public DataSize getMaxHttpFormPostSize() {
+			return this.maxHttpFormPostSize;
+		}
+
+		public void setMaxHttpFormPostSize(DataSize maxHttpFormPostSize) {
+			this.maxHttpFormPostSize = maxHttpFormPostSize;
 		}
 
 		public Integer getAcceptors() {
@@ -764,6 +816,14 @@ public class ServerProperties {
 
 		public void setSelectors(Integer selectors) {
 			this.selectors = selectors;
+		}
+
+		public Duration getConnectionIdleTimeout() {
+			return this.connectionIdleTimeout;
+		}
+
+		public void setConnectionIdleTimeout(Duration connectionIdleTimeout) {
+			this.connectionIdleTimeout = connectionIdleTimeout;
 		}
 
 		/**
@@ -932,6 +992,26 @@ public class ServerProperties {
 	}
 
 	/**
+	 * Netty properties.
+	 */
+	public static class Netty {
+
+		/**
+		 * Connection timeout of the Netty channel.
+		 */
+		private Duration connectionTimeout;
+
+		public Duration getConnectionTimeout() {
+			return this.connectionTimeout;
+		}
+
+		public void setConnectionTimeout(Duration connectionTimeout) {
+			this.connectionTimeout = connectionTimeout;
+		}
+
+	}
+
+	/**
 	 * Undertow properties.
 	 */
 	public static class Undertow {
@@ -969,6 +1049,12 @@ public class ServerProperties {
 		 * Whether servlet filters should be initialized on startup.
 		 */
 		private boolean eagerFilterInit = true;
+
+		/**
+		 * Amount of time a connection can sit idle without processing a request, before
+		 * it is closed by the server.
+		 */
+		private Duration noRequestTimeout;
 
 		private final Accesslog accesslog = new Accesslog();
 
@@ -1018,6 +1104,14 @@ public class ServerProperties {
 
 		public void setEagerFilterInit(boolean eagerFilterInit) {
 			this.eagerFilterInit = eagerFilterInit;
+		}
+
+		public Duration getNoRequestTimeout() {
+			return this.noRequestTimeout;
+		}
+
+		public void setNoRequestTimeout(Duration noRequestTimeout) {
+			this.noRequestTimeout = noRequestTimeout;
 		}
 
 		public Accesslog getAccesslog() {

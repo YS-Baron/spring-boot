@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ import org.springframework.core.env.Environment;
  * @author Phillip Webb
  * @author Mark Paluch
  * @author Stephane Nicoll
+ * @since 1.0.0
  */
 @Configuration
 @ConditionalOnClass(MongoClient.class)
@@ -51,8 +52,8 @@ public class MongoAutoConfiguration {
 
 	private MongoClient mongo;
 
-	public MongoAutoConfiguration(MongoProperties properties,
-			ObjectProvider<MongoClientOptions> options, Environment environment) {
+	public MongoAutoConfiguration(MongoProperties properties, ObjectProvider<MongoClientOptions> options,
+			Environment environment) {
 		this.options = options.getIfAvailable();
 		this.factory = new MongoClientFactory(properties, environment);
 	}
@@ -65,8 +66,7 @@ public class MongoAutoConfiguration {
 	}
 
 	@Bean
-	@ConditionalOnMissingBean(type = { "com.mongodb.MongoClient",
-			"com.mongodb.client.MongoClient" })
+	@ConditionalOnMissingBean(type = { "com.mongodb.MongoClient", "com.mongodb.client.MongoClient" })
 	public MongoClient mongo() {
 		this.mongo = this.factory.createMongoClient(this.options);
 		return this.mongo;

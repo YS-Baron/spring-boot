@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,18 +56,18 @@ public class AutoConfigurationExcludeFilterTests {
 		this.context = new AnnotationConfigApplicationContext(Config.class);
 		assertThat(this.context.getBeansOfType(String.class)).hasSize(1);
 		assertThat(this.context.getBean(String.class)).isEqualTo("test");
-		assertThatExceptionOfType(NoSuchBeanDefinitionException.class)
-				.isThrownBy(() -> this.context.getBean(FILTERED));
+		assertThatExceptionOfType(NoSuchBeanDefinitionException.class).isThrownBy(() -> this.context.getBean(FILTERED));
 	}
 
 	@Configuration
-	@ComponentScan(basePackageClasses = ExampleConfiguration.class, excludeFilters = @ComponentScan.Filter(type = FilterType.CUSTOM, classes = TestAutoConfigurationExcludeFilter.class))
+	@ComponentScan(basePackageClasses = ExampleConfiguration.class,
+			excludeFilters = @ComponentScan.Filter(type = FilterType.CUSTOM,
+					classes = TestAutoConfigurationExcludeFilter.class))
 	static class Config {
 
 	}
 
-	static class TestAutoConfigurationExcludeFilter
-			extends AutoConfigurationExcludeFilter {
+	static class TestAutoConfigurationExcludeFilter extends AutoConfigurationExcludeFilter {
 
 		@Override
 		protected List<String> getAutoConfigurations() {

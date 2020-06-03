@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,12 +50,12 @@ import org.springframework.data.mongodb.repository.support.MongoRepositoryFactor
  * @author Dave Syer
  * @author Oliver Gierke
  * @author Josh Long
+ * @since 1.0.0
  * @see EnableMongoRepositories
  */
 @Configuration
 @ConditionalOnClass({ MongoClient.class, MongoRepository.class })
-@ConditionalOnMissingBean({ MongoRepositoryFactoryBean.class,
-		MongoRepositoryConfigurationExtension.class })
+@ConditionalOnMissingBean({ MongoRepositoryFactoryBean.class, MongoRepositoryConfigurationExtension.class })
 @ConditionalOnRepositoryType(store = "mongodb", type = RepositoryType.IMPERATIVE)
 @Import(MongoRepositoriesAutoConfigureRegistrar.class)
 @AutoConfigureAfter(MongoDataAutoConfiguration.class)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.springframework.boot.autoconfigure.sendgrid;
 
 import com.sendgrid.Client;
 import com.sendgrid.SendGrid;
+import com.sendgrid.SendGridAPI;
 import org.apache.http.HttpHost;
 import org.apache.http.impl.client.HttpClientBuilder;
 
@@ -50,11 +51,10 @@ public class SendGridAutoConfiguration {
 	}
 
 	@Bean
-	@ConditionalOnMissingBean
+	@ConditionalOnMissingBean(SendGridAPI.class)
 	public SendGrid sendGrid() {
 		if (this.properties.isProxyConfigured()) {
-			HttpHost proxy = new HttpHost(this.properties.getProxy().getHost(),
-					this.properties.getProxy().getPort());
+			HttpHost proxy = new HttpHost(this.properties.getProxy().getHost(), this.properties.getProxy().getPort());
 			return new SendGrid(this.properties.getApiKey(),
 					new Client(HttpClientBuilder.create().setProxy(proxy).build()));
 		}

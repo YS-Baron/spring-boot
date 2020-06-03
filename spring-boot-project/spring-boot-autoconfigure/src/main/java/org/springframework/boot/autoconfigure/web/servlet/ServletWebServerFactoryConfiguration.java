@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ class ServletWebServerFactoryConfiguration {
 	@Configuration
 	@ConditionalOnClass({ Servlet.class, Tomcat.class, UpgradeProtocol.class })
 	@ConditionalOnMissingBean(value = ServletWebServerFactory.class, search = SearchStrategy.CURRENT)
-	public static class EmbeddedTomcat {
+	static class EmbeddedTomcat {
 
 		@Bean
 		public TomcatServletWebServerFactory tomcatServletWebServerFactory() {
@@ -67,10 +67,9 @@ class ServletWebServerFactoryConfiguration {
 	 * Nested configuration if Jetty is being used.
 	 */
 	@Configuration
-	@ConditionalOnClass({ Servlet.class, Server.class, Loader.class,
-			WebAppContext.class })
+	@ConditionalOnClass({ Servlet.class, Server.class, Loader.class, WebAppContext.class })
 	@ConditionalOnMissingBean(value = ServletWebServerFactory.class, search = SearchStrategy.CURRENT)
-	public static class EmbeddedJetty {
+	static class EmbeddedJetty {
 
 		@Bean
 		public JettyServletWebServerFactory JettyServletWebServerFactory() {
@@ -85,7 +84,7 @@ class ServletWebServerFactoryConfiguration {
 	@Configuration
 	@ConditionalOnClass({ Servlet.class, Undertow.class, SslClientAuthMode.class })
 	@ConditionalOnMissingBean(value = ServletWebServerFactory.class, search = SearchStrategy.CURRENT)
-	public static class EmbeddedUndertow {
+	static class EmbeddedUndertow {
 
 		@Bean
 		public UndertowServletWebServerFactory undertowServletWebServerFactory() {
